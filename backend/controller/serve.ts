@@ -3,16 +3,17 @@ import { Request, Response } from "express";
 
 export class Serve {
     // 是否注册
-    static async isRegister(req: Request, res: Response) {
-        // 查询数据库是否有注册用户
-        await DBModel.isRegister().then((result) => {
-            let _isRegister = result[0].count > 0;
-            res.send({
-                code: _isRegister ? 200 : 400,
-                data: {
-                    isRegister: _isRegister
-                },
-            })
+    static async getGameInfo(req: Request, res: Response) {
+        // 查询当前对局信息
+        await DBModel.getGameInfo().then((result) => {
+            res.send(result);
+        });
+    }
+
+    static async isHasPlayer(req: Request, res: Response) {
+        // 查询是否有玩家
+        await DBModel.isHasPlayer(req.body.playerName).then((result) => {
+            res.send(result);
         });
     }
 }

@@ -14,12 +14,24 @@ export default function setupRoutes(app: Application): void {
             .send('Welcome to GoBang Game Server!');
     });
 
-    // 验证用户是否注册
-    app.get('/isRegister', async (req: Request, res: Response) => {
+    // 获取对局信息
+    app.get('/api/getGameInfo', async (req: Request, res: Response) => {
         try {
-            await Serve.isRegister(req, res);
+            await Serve.getGameInfo(req, res);
         } catch (error) {
-            console.error('isRegister 路由错误:', error);
+            console.error('getGameInfo 路由错误:', error);
+            res.status(500).json({
+                success: false,
+                message: '服务器内部错误'
+            });
+        }
+    });
+
+    app.post('/api/isHasPlayer', async (req: Request, res: Response) => {
+        try {
+            await Serve.isHasPlayer(req, res);
+        } catch (error) {
+            console.error('isHasPlayer 路由错误:', error);
             res.status(500).json({
                 success: false,
                 message: '服务器内部错误'
