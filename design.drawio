@@ -1,0 +1,153 @@
+<mxfile host="65bd71144e">
+    <diagram id="rF-ON4EUrpC1nEfG0sUD" name="第 1 页">
+        <mxGraphModel dx="687" dy="1232" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="4" value="客户端" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="440" width="220" height="600" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="Join场景" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="4">
+                    <mxGeometry x="10" y="30" width="200" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" style="edgeStyle=none;html=1;" edge="1" parent="8" source="20">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="480" y="45" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="9" value="尝试登录" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="8">
+                    <mxGeometry x="40" y="30" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="拒绝登录" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="8">
+                    <mxGeometry x="40" y="80" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="Game场景" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="4">
+                    <mxGeometry x="10" y="190" width="200" height="400" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" style="edgeStyle=none;html=1;" edge="1" parent="32">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="480" y="45" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="49" value="任意一方下棋" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="32">
+                    <mxGeometry x="40" y="130" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="60" value="所有玩家更新" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="32">
+                    <mxGeometry x="40" y="270" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="服务端" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="480" y="440" width="320" height="600" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="查询数据库是否有该用户" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="50" y="60" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="5" source="11" target="11">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="150" y="120" as="targetPoint"/>
+                        <Array as="points"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="31" style="edgeStyle=none;html=1;" edge="1" parent="5" source="27">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="-170" y="195" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="36" value="前端跳转Game场景" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="31">
+                    <mxGeometry x="0.241" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="40" value="SQL" style="swimlane;whiteSpace=wrap;html=1;startSize=23;" vertex="1" parent="5">
+                    <mxGeometry x="10" y="30" width="300" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="40" source="11">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="79.55000000000007" y="150" as="targetPoint"/>
+                        <mxPoint x="79.55" y="70" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="79.55" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="29" value="是" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="25">
+                    <mxGeometry x="0.3363" relative="1" as="geometry">
+                        <mxPoint y="-14" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="27" value="用户加入" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="40">
+                    <mxGeometry x="40" y="150" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="修改游戏信息&lt;div&gt;输入/输出:{blackId,&lt;/div&gt;&lt;div&gt;whiteId,&lt;/div&gt;&lt;div&gt;currentTurn,&lt;/div&gt;&lt;div&gt;boardState}&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="40">
+                    <mxGeometry x="140" y="30" width="80" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="WebSocket" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="10" y="260" width="300" height="340" as="geometry"/>
+                </mxCell>
+                <mxCell id="57" style="edgeStyle=none;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;" edge="1" parent="41" source="48">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="150.34782608695673" y="220" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="190" y="83"/>
+                            <mxPoint x="190" y="150"/>
+                            <mxPoint x="190" y="220"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="48" value="接受消息" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="41">
+                    <mxGeometry x="30" y="60" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="59" style="edgeStyle=none;html=1;" edge="1" parent="41" source="52">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="-220" y="215" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="52" value="发送消息" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="41">
+                    <mxGeometry x="30" y="200" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="54" style="edgeStyle=none;html=1;entryX=0.368;entryY=0.978;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="41">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="150" y="67.42000000000013" as="sourcePoint"/>
+                        <mxPoint x="169.44000000000005" y="-90.00000000000009" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="170" y="67.42000000000002"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="55" style="edgeStyle=none;html=1;entryX=1;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="41">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="180" y="-90" as="sourcePoint"/>
+                        <mxPoint x="150" y="80" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="180" y="80"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="20" value="http&lt;div&gt;api/joinGame&lt;/div&gt;&lt;div&gt;{id}&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="360" y="495" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="9" target="20">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="660" y="985" as="targetPoint"/>
+                        <mxPoint x="340" y="985" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="23" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="11" target="22">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="590" y="530" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="570" y="565"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="24" value="否" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="23">
+                    <mxGeometry x="0.1242" y="1" relative="1" as="geometry">
+                        <mxPoint x="-21" y="-1" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="53" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="49" target="48">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

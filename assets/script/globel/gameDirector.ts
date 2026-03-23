@@ -42,9 +42,6 @@ export class GameDirector extends Component {
     playerColor: 0 | 1 = 0; // 玩家颜色，-1-游客，0-黑色，1-白色
 
     token: string = ''; // 玩家token
-
-    // 观战人数
-    watchers: number = 0;
     
     //=======================================生命周期=========================================
 

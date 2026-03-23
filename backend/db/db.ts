@@ -1,14 +1,14 @@
 import mysql from 'mysql2';
-import { env } from 'process';
+import { netConfig } from '../config/config.js';
 
 export class DB {
     // 只使用连接池
     static pool = mysql.createPool({
         connectionLimit: 10,
-        host: env.HOST,
-        user: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_DATABASE
+        host: netConfig.DB_HOST,
+        user: netConfig.DB_USERNAME,
+        password: netConfig.DB_PASSWORD,
+        database: netConfig.DB_DATABASE
     });
 
     // 封装查询方法 - 使用连接池

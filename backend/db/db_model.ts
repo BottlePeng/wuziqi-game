@@ -1,5 +1,5 @@
-import { IHttpMessage } from "../config/infoConfig";
-import { DB } from "./db";
+import { IHttpMessage } from "../config/Interface.js";
+import { DB } from "./db.js";
 
 export class DBModel {
     // 重启服务器(仅服务端使用)
@@ -13,28 +13,28 @@ export class DBModel {
      * @param playerName 用户名
      * @returns response
      */
-    static async isHasPlayer(playerName: string): Promise<IHttpMessage> {
+    static async isHasPlayer(playerName: string): Promise<number> {
         const sql = `SELECT id FROM players WHERE name = ?`;
         const result = await DB.query(sql, [playerName]) as any;
 
-        let res: IHttpMessage = {
-            success: false,
-        };
+        let id = -1;
 
         if (result && result.length > 0) {
-            res.success = true;
-            res.data = result[0].id;
-            console.log(`${playerName}请求登录,已有该玩家信息:ID${res.data}`);
+            id = result[0].id;
+            console.log(`${playerName}请求登录,已有该玩家信息:ID${id}`);
         } else {
-            res.success = true;
-            res.data = -1;
-            console.log(`${playerName}请求登录,无该玩家信息:ID${res.data}`);
+            console.log(`${playerName}请求登录,无该玩家信息`);
         }
 
-        return res;
+        return id;
     }
 
-    // 加入游戏
+    /**
+     * 加入游戏
+     * @param playerId 玩家ID
+     * @param playerColor 玩家颜色 0-黑 1-白
+     * @returns 
+     */
     static async joinGame(playerId: number, playerColor: number): Promise<IHttpMessage> {
         let sql:string = '';
         let res: IHttpMessage = {
@@ -65,5 +65,32 @@ export class DBModel {
             console.log(`ID为${playerId}的玩家加入游戏失败`);
         }
         return res;
+    }
+
+    static async getGameInfo() {
+        const sql = `SELECT * FROM current_game WHERE id = 1`;
+        const result = await DB.query(sql, []) as any;
+        
+        let gameInfo = {
+            blackPlayerId: -1,
+            blackPlayerName: '',
+            whitePlayerId: -1,
+            whitePlayerName: '',
+            currentTurn: 0,
+            boardState: []
+        }
+
+        gameInfo.blackPlayerId = result[0].black_player_id? result.black_player_id : -1;
+        gameInfo.whitePlayerId = result[0].white_player_id? result.white_player_id : -1;
+        gameInfo.currentTurn = result[0].current_turn ? result.current_turn : 0;
+        gameInfo.boardState = result[0].board_state;
+        
+        let sql2 = `SELECT name FROM players WHERE id = ?`;
+        let result2 = await DB.query(sql2, [gameInfo.blackPlayerId]) as any;
+        gameInfo.blackPlayerName = result2.length > 0 ? result2[0].name : '';
+        result2 = await DB.query(sql2, [gameInfo.whitePlayerId]) as any;
+        gameInfo.whitePlayerName = result2.length > 0 ? result2[0].name : '';
+
+        return gameInfo;
     }
 }

@@ -1,10 +1,11 @@
-import { DBModel } from "../db/db_model";
+import { DBModel } from "../db/db_model.js";
 import { Request, Response } from "express";
 import WebSocket from 'ws';
 import { WebSocketServer } from "ws";
 import http from 'http';
 import { URL } from "url";
-import { IHttpMessage, MessageType } from "../config/infoConfig";
+import { IHttpMessage, IMessage as IWsMessage, MessageType } from "../config/Interface.js";
+import { netConfig } from "../config/config.js";
 
 interface IClientInfo {
     playerId: number        // 玩家id, -1-游客, *-玩家id
@@ -16,46 +17,46 @@ interface IClientInfo {
 
 
 export class Serve {
-    
-    // ===============================HTTP================================
-    // 查询玩家是否注册
-    static async isHasPlayer(req: Request, res: Response) {
-        await DBModel.isHasPlayer(req.body.playerName).then((result) => {
-            res.send(result);
-        });
+    // ===============================通用================================
+    static async getGameInfo() {
+        return await DBModel.getGameInfo();
     }
 
+    // ===============================HTTP================================
     // 加入游戏
     static async joinGame(req: Request, res: Response) {
-        const playerId = parseInt(req.body.playerId);
-        const playerColor = parseInt(req.body.playerColor);
+        let gameInfo = await Serve.getGameInfo();
 
-        if (isNaN(playerId) || isNaN(playerId)) {
-            let result: IHttpMessage = {
-                success: false,
-                message: `玩家参数{${playerId},${playerColor}},请联系管理员`,
-            }
-            res.send(result);
-            return;
-        }
+        const playerName:string = req.body.playerName;
 
-        // 验证颜色值
-        if (playerColor !== 0 && playerColor !== 1) {
-            let result: IHttpMessage = {
-                success: false,
-                message: `玩家颜色参数{${playerColor}}错误,必须是0或1`,
-            }
-            res.send(result);
-            return;
-        }
-
-        if (playerId === -1) {
+        if (playerName === 'Tourist') {
             // 游客加入游戏
             // todo 进入观战
         } else {
-            await DBModel.joinGame(playerId, playerColor).then((result) => {
+            // 查询玩家id,-1为没有找到
+            let id: number = await DBModel.isHasPlayer(playerName);
+
+            if (id === -1) {
+                let result: IHttpMessage = {
+                    success: false,
+                    message: `玩家${playerName}不存在,请联系管理员`,
+                }
                 res.send(result);
-            });
+                return;
+            }
+
+            if (gameInfo.blackPlayerId === -1) {
+                await DBModel.joinGame(id, 0).then((result) => { res.send(result) });
+            } else if (gameInfo.whitePlayerId === -1) {
+                await DBModel.joinGame(id, 1).then((result) => { res.send(result) });
+            } else {
+                let result: IHttpMessage = {
+                    success: false,
+                    message: `对局已满`,
+                }
+                res.send(result);
+                return;
+            }
         }
     }
     
@@ -134,7 +135,8 @@ export class Serve {
             this.handlePong(ws);
         });
 
-        // todo 发送对局信息
+        // 发送对局信息
+        this.sendToClient(ws, Serve.getGameInfo());
     }
 
     /**
@@ -221,7 +223,7 @@ export class Serve {
      * 发送错误消息
      */
     private sendError(ws: WebSocket, errorMessage: string): void {
-        const errorResponse = {
+        const errorResponse: IWsMessage = {
             type: MessageType.ERROR,
             data: {
                 message: errorMessage,
@@ -238,7 +240,7 @@ export class Serve {
     private startHeartbeat(): void {
         setInterval(() => {
             const now = Date.now();
-            const heartbeatTimeout = parseInt(process.env.HEART_BEAT_INTERVAL) * 2;
+            const heartbeatTimeout = netConfig.HEART_BEAT_INTERVAL * 2;
 
             this.wss.clients.forEach((ws) => {
                 const client = this.clients.get(ws);
@@ -263,14 +265,14 @@ export class Serve {
                     ws.ping();
                 }
             });
-        }, parseInt(process.env.HEART_BEAT_INTERVAL));
+        }, netConfig.HEART_BEAT_INTERVAL);
     }
 
     /**
      * 启动服务器
      */
     public start(): void {
-        this.server.listen(parseInt(process.env.PORT), () => {
+        this.server.listen(netConfig.PORT, () => {
             console.log('========================================');
             console.log(`[${new Date().toLocaleTimeString()}]`);
             console.log('WebSocket 服务器已启动');
