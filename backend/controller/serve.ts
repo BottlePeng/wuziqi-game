@@ -1,6 +1,7 @@
 import { DBModel } from "../db/db_model";
 import { Request, Response } from "express";
 import WebSocket from 'ws';
+import { WebSocketServer } from "ws";
 import http from 'http';
 import { URL } from "url";
 import { IHttpMessage, MessageType } from "../config/infoConfig";
@@ -44,15 +45,15 @@ export class Serve {
     
     // ============================WebSocket================================
     private server: http.Server;
-    private wss: WebSocket.Server;
+    private wss: WebSocketServer;
     private clients: Map<WebSocket, IClientInfo> = new Map();   // 客户端池
 
     constructor(server: http.Server) {
         // 创建 WebSocket 服务器，绑定到现有的 HTTP 服务器
-        this.wss = new WebSocket.Server({
-            server,
-            path: '/ws'  // WebSocket 路径
-        });
+        this.wss = new WebSocketServer({server, path: '/ws'});
+
+        this.server = server;
+
 
         // 设置 WebSocket 事件处理
         this.setupWebSocketEvents();
