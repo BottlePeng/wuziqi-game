@@ -51,19 +51,43 @@ wsServer.start();
 
 // 启动
 app.listen(PORT, () => {
+  console.log(`[${new Date().toLocaleTimeString()}]`);
   console.log(`🚀 服务器启动成功！`);
   console.log(`📡 服务器端口${PORT}已开启`);
   console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
 });
 
-// 优雅关闭
+/**
+ * 优雅关闭
+ */
 const gracefulShutdown = async () => {
-  console.log('\n🛑 正在关闭服务器...');
-  wsServer.stop(); // 关闭 WebSocket 服务器
-  server.close(() => {
-    console.log('✅ 服务器已关闭');
-    process.exit(0);
-  });
+  console.log('\n========================================');
+  console.log(`[${new Date().toLocaleTimeString()}]`);
+  console.log('🛑 正在关闭服务器...');
+  console.log('========================================');
+
+  // 设置超时强制退出
+  const timeout = setTimeout(() => {
+    console.error('⚠️ 关闭超时，强制退出');
+    process.exit(1);
+  }, 10000);
+
+  try {
+    // 停止 WebSocket 服务器
+    await wsServer.stop();
+
+    // 关闭 HTTP 服务器
+    server.close(() => {
+      console.log('✅ 所有服务器已关闭');
+      clearTimeout(timeout);
+      process.exit(0);
+    });
+
+  } catch (error) {
+    console.error('❌ 关闭失败:', error);
+    clearTimeout(timeout);
+    process.exit(1);
+  }
 };
 
 process.on('SIGINT', gracefulShutdown);

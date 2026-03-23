@@ -14,7 +14,7 @@ export class DBModel {
      * @returns response
      */
     static async isHasPlayer(playerName: string): Promise<IHttpMessage> {
-        const sql = `SELECT * FROM players WHERE name = ?`;
+        const sql = `SELECT id FROM players WHERE name = ?`;
         const result = await DB.query(sql, [playerName]) as any;
 
         let res: IHttpMessage = {
@@ -23,12 +23,12 @@ export class DBModel {
 
         if (result && result.length > 0) {
             res.success = true;
-            res.data = true;
-            console.log(`${playerName}请求登录,已有该玩家信息`);
+            res.data = result[0].id;
+            console.log(`${playerName}请求登录,已有该玩家信息:ID${res.data}`);
         } else {
             res.success = true;
-            res.data = false;
-            console.log(`${playerName}请求登录,无该玩家信息`);
+            res.data = -1;
+            console.log(`${playerName}请求登录,无该玩家信息:ID${res.data}`);
         }
 
         return res;

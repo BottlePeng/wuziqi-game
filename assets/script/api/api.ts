@@ -26,11 +26,7 @@ export class Api {
             }
 
             if (res.success) {
-                if (typeof res.data === 'number') {
-                    return res.data;
-                } else {
-                    throw new Error('服务器返回数据格式错误,请联系管理员');
-                }
+                return res.data;
             } else {
                 throw new Error(res.message);
             }
@@ -47,10 +43,11 @@ export class Api {
      * @param playerColor 玩家颜色
      * @returns {Promise<void>}
      */
-    static async joinGame(playerId: number, playerColor: number): Promise<void> {
+    static async joinGame(playerId: number, playerColor: number): Promise<string> {
         try {
             const response = await request('POST', '/api/joinGame', { playerId, playerColor });
-
+            console.log(`玩家{${playerId},${playerColor}}加入游戏`);
+            
             let res:IHttpMessage = {
                 success: false,
             }
@@ -58,17 +55,14 @@ export class Api {
             if (response) {
                 res.success = response.success;
                 res.message = response.message;
-                GameDirector.instance.token = response.data;
+                res.data = response.data;
+                
             } else {
                 throw new Error('未请求到任何游戏信息,请联系管理员');
             }
 
             if (res.success) {
-                if (typeof res.data === 'object') {
-                    return;
-                } else {
-                    throw new Error('服务器返回数据格式错误,请联系管理员');
-                }
+                return res.data;
             } else {
                 throw new Error(res.message);
             }

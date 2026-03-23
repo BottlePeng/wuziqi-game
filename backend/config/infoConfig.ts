@@ -11,7 +11,10 @@ export interface IWSMessage {
 }
 
 export enum MessageType {
-    // 心跳相关
+    // 连接成功
+    CONNECT = 'connect',
+
+    // 心跳
     HEARTBEAT = 'heartbeat',      // 心跳
 
     // 错误处理

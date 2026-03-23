@@ -39,7 +39,8 @@ export class Login extends Component {
         this.label.string = `当前对局:
 黑方: ${this.blackPlayer ? this.blackPlayer : '无'}
 白方: ${this.whitePlayer ? this.whitePlayer : '无'}
-观战人数: ${this.watchers} / 10`;
+观战人数: ${this.watchers} / 10
+token = ${GameDirector.instance.token}`;
     }
 
     async onJoinBtnClick() {
@@ -52,16 +53,21 @@ export class Login extends Component {
         if (playerName !== this.blackPlayer && playerName !== this.whitePlayer) {
             try {
 
-                let id = await Api.isHasPlayer(playerName);
+                let id: number = await Api.isHasPlayer(playerName);
                 
                 if (id !== -1) {
+                    let token:string = '';
                     if (this.blackPlayer === null) {
-                        await Api.joinGame(id, 0);
+                        token = await Api.joinGame(id, 0);
                     } else if (this.whitePlayer === null){
-                        await Api.joinGame(id, 1);
+                        token = await Api.joinGame(id, 1);
                     } else {
                         this.tipsPrefab.startJumpEffect('对局玩家已满');
                     }
+
+                    GameDirector.instance.token = token;
+                    GameDirector.instance.playerName = playerName;
+                    GameDirector.instance.playerId = id;
 
                     // 跳转GameScene
                     // director.loadScene('Game');
@@ -71,6 +77,7 @@ export class Login extends Component {
                 }
             } catch (error) {
                 this.tipsPrefab.startJumpEffect(error);
+                console.error(error);
             }
         } else {
             this.tipsPrefab.startJumpEffect('该用户已在线,请选择其他用户名');

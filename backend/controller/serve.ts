@@ -27,15 +27,31 @@ export class Serve {
 
     // 加入游戏
     static async joinGame(req: Request, res: Response) {
-        const playerId = req.body.playerId;
-        const playerColor = req.body.playerColor;
+        const playerId = parseInt(req.body.playerId);
+        const playerColor = parseInt(req.body.playerColor);
 
-        if (!playerId || !playerColor || (playerColor !== 0 && playerColor !== 1)) {
+        if (isNaN(playerId) || isNaN(playerId)) {
             let result: IHttpMessage = {
                 success: false,
-                message: '玩家参数错误,请联系管理员',
+                message: `玩家参数{${playerId},${playerColor}},请联系管理员`,
             }
             res.send(result);
+            return;
+        }
+
+        // 验证颜色值
+        if (playerColor !== 0 && playerColor !== 1) {
+            let result: IHttpMessage = {
+                success: false,
+                message: `玩家颜色参数{${playerColor}}错误,必须是0或1`,
+            }
+            res.send(result);
+            return;
+        }
+
+        if (playerId === -1) {
+            // 游客加入游戏
+            // todo 进入观战
         } else {
             await DBModel.joinGame(playerId, playerColor).then((result) => {
                 res.send(result);
@@ -117,6 +133,8 @@ export class Serve {
         ws.on('pong', () => {
             this.handlePong(ws);
         });
+
+        // todo 发送对局信息
     }
 
     /**
@@ -262,18 +280,46 @@ export class Serve {
     }
 
     /**
-     * 停止服务器
-     */
-    public stop(): Promise<void> {
-        return new Promise((resolve) => {
-            // 关闭所有连接
-            this.wss.clients.forEach((ws) => {
+ * 停止服务器
+ */
+    public async stop(): Promise<void> {
+        // 1. 通知所有客户端
+        const closeMessage = JSON.stringify({
+            type: 'shutdown',
+            message: '服务器关闭',
+            timestamp: Date.now()
+        });
+
+        this.wss.clients.forEach((ws) => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(closeMessage);
                 ws.close();
-            });
+            }
+        });
+
+        // 2. 等待 WebSocket 连接关闭
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // 3. 关闭 WebSocket 服务器
+        await new Promise<void>((resolve) => {
+            this.wss.close(() => resolve());
+        });
+
+        // 4. 关闭 HTTP 服务器
+        return new Promise((resolve) => {
+            // 强制关闭所有连接（Node.js 20+）
+            if (this.server.closeAllConnections) {
+                this.server.closeAllConnections();
+            }
 
             this.server.close(() => {
                 resolve();
             });
+
+            // 超时处理
+            setTimeout(() => {
+                resolve();
+            }, 3000);
         });
     }
 }
