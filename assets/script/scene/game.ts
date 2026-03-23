@@ -8,7 +8,7 @@ export class game extends Component {
     @property(Label)
     label: Label = null;
 
-    protected start(): void {
+    protected onLoad(): void {
         GameWebSocket.instance.connectWebSocket(GameDirector.instance.playerId, GameDirector.instance.token);
     }
 

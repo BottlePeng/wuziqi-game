@@ -10,6 +10,7 @@ export interface IMessage {
 }
 
 export enum MessageType {
+    SHOTDOWN = `shutdown`,
     ERROR = `error`,
     UPDATE = `update`,
 }

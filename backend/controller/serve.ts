@@ -15,11 +15,16 @@ interface IClientInfo {
     pingSent: boolean;      // 是否已发送 Ping 消息
 }
 
-
 export class Serve {
     // ===============================通用================================
+    // 获取游戏信息
     static async getGameInfo() {
         return await DBModel.getGameInfo();
+    }
+
+    // 踢出玩家
+    static async withdrawPlayer(playerId: number) {
+        await DBModel.withdrawPlayer(playerId);
     }
 
     // ===============================HTTP================================
@@ -27,7 +32,7 @@ export class Serve {
     static async joinGame(req: Request, res: Response) {
         let gameInfo = await Serve.getGameInfo();
 
-        const playerName:string = req.body.playerName;
+        const playerName: string = req.body.playerName;
 
         let result: IHttpMessage = {
             success: false,
@@ -68,22 +73,25 @@ export class Serve {
 
         res.send(result);
     }
-    
+
     // ============================WebSocket================================
     private server: http.Server;
     private wss: WebSocketServer;
     private clients: Map<WebSocket, IClientInfo> = new Map();   // 客户端池
+    private heartbeatInterval: NodeJS.Timeout | null = null;    // 心跳定时器
 
     constructor(server: http.Server) {
+        // 重置游戏
+        DBModel.restart();
+
         // 创建 WebSocket 服务器，绑定到现有的 HTTP 服务器
-        this.wss = new WebSocketServer({server, path: '/ws'});
+        this.wss = new WebSocketServer({ server, path: '/ws' });
 
         this.server = server;
 
-
         // 设置 WebSocket 事件处理
         this.setupWebSocketEvents();
-        
+
         // 启动心跳检测
         this.startHeartbeat();
     }
@@ -181,12 +189,24 @@ export class Serve {
     /**
      * 处理连接关闭
      */
-    private handleClose(ws: WebSocket, code: number, reason: Buffer): void {
+    private async handleClose(ws: WebSocket, code: number, reason: Buffer): Promise<void> {
         const client = this.clients.get(ws);
         const reasonStr = reason.toString();
 
         console.log(`[${new Date().toLocaleTimeString()}] 客户端断开: ${client?.playerId || 'unknown'}`);
         console.log(`断开代码: ${code}, 原因: ${reasonStr || '无'}`);
+
+        // 如果是真实玩家（非游客），且连接断开，踢出玩家
+        if (client && client.playerId !== -1) {
+            try {
+                await Serve.withdrawPlayer(client.playerId);
+                
+                // 可选：通知其他玩家该玩家已断开
+                await this.broadcastGameUpdate();
+            } catch (error) {
+                console.error(`踢出玩家 ${client?.playerId} 失败:`, error);
+            }
+        }
 
         this.clients.delete(ws);
         console.log(`当前连接数: ${this.clients.size}`);
@@ -198,6 +218,11 @@ export class Serve {
     private handleError(ws: WebSocket, error: Error): void {
         const client = this.clients.get(ws);
         console.error(`[${new Date().toLocaleTimeString()}] 客户端错误 [${client?.playerId}]:`, error.message);
+
+        // 发生错误时，主动关闭连接
+        if (client && client.playerId !== -1) {
+            ws.terminate();
+        }
     }
 
     /**
@@ -235,6 +260,25 @@ export class Serve {
     }
 
     /**
+     * 广播游戏更新给所有客户端
+     */
+    private async broadcastGameUpdate(): Promise<void> {
+        // 发送对局信息
+        let message: IWsMessage = {
+            type: MessageType.UPDATE,
+            data: {
+                gameInfo: await Serve.getGameInfo(),
+            }
+        }
+
+        this.wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                this.sendToClient(client, message);
+            }
+        });
+    }
+
+    /**
      * 发送错误消息
      */
     private sendError(ws: WebSocket, errorMessage: string): void {
@@ -253,9 +297,10 @@ export class Serve {
      * 启动心跳检测
      */
     private startHeartbeat(): void {
-        setInterval(() => {
+        this.heartbeatInterval = setInterval(async () => {
             const now = Date.now();
             const heartbeatTimeout = netConfig.HEART_BEAT_INTERVAL * 2;
+            const timeoutClients: WebSocket[] = [];
 
             this.wss.clients.forEach((ws) => {
                 const client = this.clients.get(ws);
@@ -264,8 +309,7 @@ export class Serve {
                 // 检查心跳超时
                 if ((now - client.lastPongTime) > heartbeatTimeout) {
                     console.log(`[${new Date().toLocaleTimeString()}] 客户端心跳超时，断开连接: ${client.playerId}`);
-                    ws.terminate();
-                    this.clients.delete(ws);
+                    timeoutClients.push(ws);
                     return;
                 }
 
@@ -280,6 +324,32 @@ export class Serve {
                     ws.ping();
                 }
             });
+
+            // ✅ 处理超时的客户端（先踢出玩家，再断开连接）
+            for (const ws of timeoutClients) {
+                const client = this.clients.get(ws);
+
+                // 踢出真实玩家（非游客）
+                if (client && client.playerId !== -1) {
+                    try {
+                        await Serve.withdrawPlayer(client.playerId);
+                        console.log(`✅ 玩家 ${client.playerId} 已从游戏中移除（心跳超时）`);
+
+                        // 通知其他玩家游戏状态已更新
+                        await this.broadcastGameUpdate();
+                    } catch (error) {
+                        console.error(`踢出玩家 ${client?.playerId} 失败:`, error);
+                    }
+                }
+
+                // 断开 WebSocket 连接
+                ws.terminate();
+                this.clients.delete(ws);
+            }
+
+            if (timeoutClients.length > 0) {
+                console.log(`当前连接数: ${this.clients.size}`);
+            }
         }, netConfig.HEART_BEAT_INTERVAL);
     }
 
@@ -297,19 +367,23 @@ export class Serve {
     }
 
     /**
- * 停止服务器
- */
+     * 停止服务器
+     */
     public async stop(): Promise<void> {
+        // 停止心跳检测
+        if (this.heartbeatInterval) {
+            clearInterval(this.heartbeatInterval);
+            this.heartbeatInterval = null;
+        }
+
         // 1. 通知所有客户端
-        const closeMessage = JSON.stringify({
-            type: 'shutdown',
-            message: '服务器关闭',
-            timestamp: Date.now()
-        });
+        const closeMessage: IWsMessage = {
+            type: MessageType.SHOTDOWN,
+        };
 
         this.wss.clients.forEach((ws) => {
             if (ws.readyState === WebSocket.OPEN) {
-                ws.send(closeMessage);
+                ws.send(JSON.stringify(closeMessage));
                 ws.close();
             }
         });

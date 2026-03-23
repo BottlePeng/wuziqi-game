@@ -2,7 +2,7 @@ import { IHttpMessage } from "../config/Interface.js";
 import { DB } from "./db.js";
 
 export class DBModel {
-    // 重启服务器(仅服务端使用)
+    // 重启游戏(仅服务端使用)
     static async restart() {
         const sql = `CALL sp_restart_server()`;
         await DB.query(sql, []) as any;
@@ -68,6 +68,7 @@ export class DBModel {
         return res;
     }
 
+    // 获取游戏信息
     static async getGameInfo() {
         const sql = `SELECT * FROM current_game WHERE id = 1`;
         const result = await DB.query(sql, []) as any;
@@ -93,5 +94,41 @@ export class DBModel {
         gameInfo.whitePlayerName = result2.length > 0 ? result2[0].name : '';
 
         return gameInfo;
+    }
+
+    // 踢出玩家
+    static async withdrawPlayer(playerId: number) {
+        try {
+            // 查询玩家当前是黑方还是白方
+            const getPlayerSql = `SELECT black_player_id, white_player_id FROM current_game WHERE id = 1`;
+            const gameResult = await DB.query(getPlayerSql, []) as any[];
+
+            if (!gameResult || gameResult.length === 0) return
+
+            const game = gameResult[0];
+            let playerColor: number | null = null;
+
+            // 判断玩家颜色
+            if (game.black_player_id === playerId) {
+                playerColor = 0; // 黑方
+            } else if (game.white_player_id === playerId) {
+                playerColor = 1; // 白方
+            } else {
+                return;
+            }
+
+            // 清空对应颜色的玩家ID
+            let updateSql = '';
+            if (playerColor === 0) {
+                updateSql = `UPDATE current_game SET black_player_id = NULL WHERE id = 1`;
+            } else {
+                updateSql = `UPDATE current_game SET white_player_id = NULL WHERE id = 1`;
+            }
+
+            await DB.query(updateSql, []) as any;
+            console.log(`✅ 玩家ID:${playerId} 已从游戏中移除（连接断开）`);
+        } catch (error) {
+            console.error('踢出玩家时发生错误:', error);
+        }
     }
 }

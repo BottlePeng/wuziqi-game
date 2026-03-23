@@ -4,6 +4,7 @@ import setupRoutes from '../routes/route.js';
 import http from 'http';
 import { Serve } from '../controller/serve.js';
 import { netConfig } from '../config/config.js';
+
 const app = express();
 
 // 设置跨域 - 使用中间件方式
@@ -36,53 +37,26 @@ try {
 // 获取端口
 const PORT = netConfig.PORT;
 
-// 将 Express 应用传递给 http.createServer,并创建WS服务器
+// 将 Express 应用传递给 http.createServer
 const server = http.createServer(app);
 const wsServer = new Serve(server);
+
+// 启动 WebSocket 服务器（内部会启动 HTTP 服务器）
 wsServer.start();
 
 
-app.listen(PORT, () => {
-  console.log(`[${new Date().toLocaleTimeString()}]`);
-  console.log(`🚀 服务器启动成功！`);
-  console.log(`📡 服务器端口${PORT}已开启`);
-  console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
-});
+console.log(`[${new Date().toLocaleTimeString()}]`);
+console.log(`🚀 服务器启动成功！`);
+console.log(`📡 服务器端口 ${PORT} 已开启`);
+console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
 
-const gracefulShutdown = async () => {
-  console.log('\n========================================');
-  console.log(`[${new Date().toLocaleTimeString()}]`);
-  console.log('🛑 正在关闭服务器...');
-  console.log('========================================');
+// ✅ 优雅关闭
+const gracefulShutdown = async (signal: string) => {
+  console.log(`🛑 收到 ${signal} 信号，正在关闭服务器...`);
 
-  console.log(1);
-  
-
-  // 设置超时强制退出
-  const timeout = setTimeout(() => {
-    console.error('⚠️ 关闭超时，强制退出');
-    process.exit(1);
-  }, 10000);
-
-  console.log(2);
-
-  try {
-    // 停止 WebSocket 服务器
-    await wsServer.stop();
-
-    // 关闭 HTTP 服务器
-    server.close(() => {
-      console.log('✅ 所有服务器已关闭');
-      clearTimeout(timeout);
-      process.exit(0);
-    });
-
-  } catch (error) {
-    console.error('❌ 关闭失败:', error);
-    clearTimeout(timeout);
-    process.exit(1);
-  }
+  wsServer.stop(); // 手动关闭服务器时无效
 };
 
-process.on('SIGINT', gracefulShutdown);
-process.on('SIGTERM', gracefulShutdown);
+// 注册信号处理
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
