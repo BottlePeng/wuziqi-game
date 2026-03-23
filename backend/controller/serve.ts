@@ -29,35 +29,44 @@ export class Serve {
 
         const playerName:string = req.body.playerName;
 
+        let result: IHttpMessage = {
+            success: false,
+        }
+
         if (playerName === 'Tourist') {
             // 游客加入游戏
-            // todo 进入观战
+            result = {
+                success: true,
+                message: `游客加入观战`,
+                data: {
+                    id: -1,
+                    token: `-1-0-${Date.now()}`,
+                }
+            }
         } else {
             // 查询玩家id,-1为没有找到
             let id: number = await DBModel.isHasPlayer(playerName);
 
             if (id === -1) {
-                let result: IHttpMessage = {
+                result = {
                     success: false,
                     message: `玩家${playerName}不存在,请联系管理员`,
                 }
-                res.send(result);
-                return;
             }
 
-            if (gameInfo.blackPlayerId === -1) {
-                await DBModel.joinGame(id, 0).then((result) => { res.send(result) });
-            } else if (gameInfo.whitePlayerId === -1) {
-                await DBModel.joinGame(id, 1).then((result) => { res.send(result) });
+            if (gameInfo.blackPlayerId === -1 && gameInfo.whitePlayerId !== id) {
+                result = await DBModel.joinGame(id, 0);
+            } else if (gameInfo.whitePlayerId === -1 && gameInfo.whitePlayerId !== id) {
+                result = await DBModel.joinGame(id, 1);
             } else {
-                let result: IHttpMessage = {
+                result = {
                     success: false,
-                    message: `对局已满`,
+                    message: `用户已在线或者玩家已满`,
                 }
-                res.send(result);
-                return;
             }
         }
+
+        res.send(result);
     }
     
     // ============================WebSocket================================

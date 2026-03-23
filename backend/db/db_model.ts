@@ -33,7 +33,7 @@ export class DBModel {
      * 加入游戏
      * @param playerId 玩家ID
      * @param playerColor 玩家颜色 0-黑 1-白
-     * @returns 
+     * @returns
      */
     static async joinGame(playerId: number, playerColor: number): Promise<IHttpMessage> {
         let sql:string = '';
@@ -48,17 +48,17 @@ export class DBModel {
             case 1:
                 sql = `UPDATE current_game SET white_player_id = ? WHERE id = 1`
                 break;
-            default:
-                res.message = 'playerColor错误,请联系管理员';
-                break;
         }
 
         const result = await DB.query(sql, [playerId]) as any;
         if (result.changedRows > 0) {
             res.success = true;
 
-            let token = `${playerId}-${playerColor}-${Date.now()}`
-            res.data = token;
+            let _token = `${playerId}-${playerColor}-${Date.now()}`
+            res.data = {
+                id: playerId,
+                token: _token,
+            };
             console.log(`ID为${playerId}的玩家已成为${playerColor === 0 ? '黑方' : '白方'}`);
         } else {
             res.success = false;

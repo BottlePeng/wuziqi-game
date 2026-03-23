@@ -12,8 +12,6 @@ export class GameWebSocket {
 
         this.ws.onopen = () => {
             console.log('WebSocket 连接成功');
-            // 开始心跳
-            this.startHeartbeat();
         };
 
         this.ws.onmessage = (event) => {
@@ -21,10 +19,6 @@ export class GameWebSocket {
             switch (data.type) {
                 case 'connected':
                     console.log('连接成功:', data.message);
-                    break;
-                case 'ping':
-                    // 回复心跳
-                    this.ws?.send(JSON.stringify({ type: MessageType.HEARTBEAT }));
                     break;
             }
         };
@@ -36,14 +30,6 @@ export class GameWebSocket {
         this.ws.onerror = (error) => {
             console.error('WebSocket 错误:', error);
         };
-    }
-
-    private startHeartbeat() {
-        setInterval(() => {
-            if (this.ws?.readyState === WebSocket.OPEN) {
-                this.ws.send(JSON.stringify({ type: MessageType.HEARTBEAT }));
-            }
-        }, 30000);
     }
 
     private reconnect() {
