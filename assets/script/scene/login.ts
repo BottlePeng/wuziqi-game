@@ -1,8 +1,6 @@
 import { _decorator, Button, Component, director, EditBox, Label, Node, Prefab } from 'cc';
-import { GameDirector } from '../globel/gameDirector';
 import { Api } from '../api/api';
 import { Tips } from '../prefab/tips';
-import { IHttpMessage } from '../config/infoConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('Login')

@@ -2,6 +2,7 @@ import { _decorator, Component, director } from "cc";
 import { IMessage, MessageType } from "../config/infoConfig";
 import { networkConfig } from "../config/networkConfig";
 import { GameDirector } from "../globel/gameDirector";
+import { Game } from "../scene/game";
 const { ccclass, property } = _decorator;
 
 const wx = window['wx']
@@ -141,7 +142,20 @@ export class GameWebSocket extends Component {
                     GameDirector.instance.whitePlayerId = _data.data?.gameInfo?.whitePlayerId;
                     GameDirector.instance.whitePlayerName = _data.data?.gameInfo?.whitePlayerName;
                     GameDirector.instance.currentTurn = _data.data?.gameInfo?.currentTurn;
-                    GameDirector.instance.boardState = _data.data?.gameInfo?.boardState;
+                    
+                    let boardState = _data.data?.gameInfo?.boardState;
+                    if (typeof boardState === 'string') {
+                        try {
+                            boardState = JSON.parse(boardState);
+                        } catch (e) {
+                            console.error('解析 boardState 失败:', e);
+                            boardState = Array(15).fill(0).map(() => Array(15).fill(0));
+                        }
+                    }
+                    GameDirector.instance.boardState = boardState;
+
+                    // 更新棋盘
+                    if (Game.instance) Game.instance.updateBtns();
                     break;
 
                 case MessageType.ERROR:

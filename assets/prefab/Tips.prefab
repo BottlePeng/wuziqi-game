@@ -352,7 +352,7 @@
     "__prefab": {
       "__id__": 15
     },
-    "_alignFlags": 1,
+    "_alignFlags": 17,
     "_target": null,
     "_left": 0,
     "_right": 0,
@@ -391,7 +391,7 @@
     "label": {
       "__id__": 5
     },
-    "jumpDistance": 50,
+    "jumpDistance": -300,
     "jumpDuration": 1,
     "_id": ""
   },
@@ -408,7 +408,6 @@
       "__id__": 0
     },
     "fileId": "56F0R1NqdD9p4ozHV5F/wO",
-    "instance": null,
-    "targetOverrides": null
+    "targetOverrides": []
   }
 ]

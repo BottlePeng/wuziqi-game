@@ -78,33 +78,7 @@ export class Tips extends Component {
             .start();
     }
 
-    /**
-     * 显示提示（带防抖，避免快速连续调用）
-     */
-    private _showTimeout: any = null;
-
-    showTips(tips: string, delay: number = 0.5): void {
-        // 防抖：清除之前的定时器
-        if (this._showTimeout) {
-            clearTimeout(this._showTimeout);
-        }
-
-        // 如果正在显示，先停止
-        if (this.node.active) {
-            this.stopCurrentAnimation();
-        }
-
-        // 延迟显示，避免快速连续调用
-        this._showTimeout = setTimeout(() => {
-            this.startJumpEffect(tips);
-            this._showTimeout = null;
-        }, delay * 1000);
-    }
-
     onDestroy() {
-        if (this._showTimeout) {
-            clearTimeout(this._showTimeout);
-        }
         this.stopCurrentAnimation();
     }
 }
