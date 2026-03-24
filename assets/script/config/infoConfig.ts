@@ -14,4 +14,5 @@ export enum MessageType {
     ERROR = `error`,
     UPDATE = `update`,
     STEP = `step`,
+    RESET = `reset`,
 }

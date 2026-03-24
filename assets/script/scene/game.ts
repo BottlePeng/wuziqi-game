@@ -25,6 +25,10 @@ export class Game extends Component {
     @property(Node)
     btns: Node = null;
     
+    @property(Node)
+    resetBtn: Node = null;
+
+
     onDestroy() {
         // 清理实例引用
         if (Game._instance === this) {
@@ -59,7 +63,10 @@ export class Game extends Component {
                     });
                 }
             });
-        } 
+
+            // 重置棋盘按钮
+            this.resetBtn.on(Button.EventType.CLICK, () => { Api.resetBoard(); });
+        }
     }
 
     protected start(): void {

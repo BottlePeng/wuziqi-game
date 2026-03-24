@@ -35,8 +35,13 @@ export class Serve {
 
     // 下子
     static async makeStep(position: { row: number, col: number }, color: number) {
-        // todo 下子
         await DBModel.makeStep(position, color);
+        Serve._instance?.broadcastGameUpdate();
+    }
+
+    // 重置棋盘
+    static async resetBoard() {
+        await DBModel.resetBoard();
         Serve._instance?.broadcastGameUpdate();
     }
 
@@ -237,6 +242,10 @@ export class Serve {
                         position: { row: number, col: number }, color: number 
                     };
                     Serve.makeStep(stepData.position, stepData.color);
+                    break;
+                case MessageType.RESET:
+                    // 重置棋盘
+                    Serve.resetBoard();
                     break;
                 default:
                     this.sendError(ws, '未知消息类型');

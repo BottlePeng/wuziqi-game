@@ -52,4 +52,18 @@ export class Api {
             throw err;
         }
     }
+
+    /**
+     * 重置棋盘
+     */
+    static resetBoard(): void {
+        try {
+            let message: IMessage = {
+                type: MessageType.RESET,
+            }
+            GameWebSocket.instance.sendMessage(message);
+        } catch (err) {
+            throw err;
+        }
+    }
 }

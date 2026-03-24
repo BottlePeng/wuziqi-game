@@ -8,6 +8,12 @@ export class DBModel {
         await DB.query(sql, []) as any;
     }
 
+    // 重置棋盘
+    static async resetBoard() {
+        const sql = `CALL sp_reset_board()`;
+        await DB.query(sql, []) as any;
+    }
+
     /**
      * 查询是否存在用户
      * @param playerName 用户名
