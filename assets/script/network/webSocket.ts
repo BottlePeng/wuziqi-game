@@ -1,5 +1,5 @@
 import { _decorator, Component, director } from "cc";
-import { MessageType } from "../config/infoConfig";
+import { IMessage, MessageType } from "../config/infoConfig";
 import { networkConfig } from "../config/networkConfig";
 import { GameDirector } from "../globel/gameDirector";
 const { ccclass, property } = _decorator;
@@ -327,7 +327,7 @@ export class GameWebSocket extends Component {
     /**
      * 发送消息
      */
-    public sendMessage(message: any): boolean {
+    public sendMessage(message: IMessage): boolean {
         if (this.isConnected()) {
             try {
                 this.ws.send(JSON.stringify(message));

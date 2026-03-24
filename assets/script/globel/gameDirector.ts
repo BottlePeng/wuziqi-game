@@ -1,5 +1,4 @@
 import { _decorator, Component, director } from 'cc';
-import { Api } from '../api/api';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameDirector')

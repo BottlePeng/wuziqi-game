@@ -1,7 +1,8 @@
 // api.ts
-import { IHttpMessage } from "../config/infoConfig";
+import { IHttpMessage, IMessage, MessageType } from "../config/infoConfig";
 import { GameDirector } from "../globel/gameDirector";
 import { request } from "../network/httpUtil";
+import { GameWebSocket } from "../network/webSocket";
 
 export class Api {
     /**
@@ -26,6 +27,27 @@ export class Api {
             } else {
                 throw new Error('请求服务器失败');
             }
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    /**
+     * 下子
+     * @param position 位置
+     * @param color 颜色
+     * @returns {Promise<void>}
+     */
+    static async makeStep(position: { row: number, col: number }, color: 0 | 1): Promise<void> {
+        try {
+            let message: IMessage = {
+                type: MessageType.STEP,
+                data: {
+                    position: position,
+                    color: color
+                }
+            }
+            GameWebSocket.instance.sendMessage(message);
         } catch (err) {
             throw err;
         }

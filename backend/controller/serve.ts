@@ -4,7 +4,7 @@ import WebSocket from 'ws';
 import { WebSocketServer } from "ws";
 import http from 'http';
 import { URL } from "url";
-import { IHttpMessage, IMessage as IWsMessage, MessageType } from "../config/Interface.js";
+import { IHttpMessage, IMessage, IMessage as IWsMessage, MessageType } from "../config/Interface.js";
 import { netConfig } from "../config/config.js";
 
 interface IClientInfo {
@@ -31,6 +31,13 @@ export class Serve {
     // 踢出玩家
     static async withdrawPlayer(playerId: number) {
         await DBModel.withdrawPlayer(playerId);
+    }
+
+    // 下子
+    static async makeStep(position: { row: number, col: number }, color: number) {
+        // todo 下子
+        await DBModel.makeStep(position, color);
+        Serve._instance?.broadcastGameUpdate();
     }
 
     // ===============================HTTP================================
@@ -224,11 +231,17 @@ export class Serve {
             console.log(`[${new Date().toLocaleTimeString()}] 收到消息 [${client.playerId}]:`, message.type);
 
             switch (message.type) {
-                // todo 处理消息类型
-
+                case MessageType.STEP:
+                    // 处理落子
+                    const stepData = message.data as { 
+                        position: { row: number, col: number }, color: number 
+                    };
+                    Serve.makeStep(stepData.position, stepData.color);
+                    break;
                 default:
                     this.sendError(ws, '未知消息类型');
                     console.log(`未知消息类型: ${message.type}`);
+                    break;
             }
         } catch (error) {
             console.error('解析消息失败:', error);

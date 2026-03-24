@@ -131,4 +131,50 @@ export class DBModel {
             console.error('踢出玩家时发生错误:', error);
         }
     }
+
+    // 下子
+    static async makeStep(position: { row: number, col: number }, color: number) {
+        try {
+            const gameSql = `SELECT * FROM current_game WHERE id = 1`;
+            const gameResult = await DB.query(gameSql, []) as any[];
+
+            const game = gameResult[0];
+
+            let boardState: number[][];
+            try {
+                boardState = typeof game.board_state === 'string'
+                    ? JSON.parse(game.board_state)
+                    : game.board_state;
+            } catch (e) {
+                // 如果解析失败，初始化空棋盘
+                boardState = Array(15).fill(0).map(() => Array(15).fill(0));
+            }
+
+            const { row, col } = position;
+
+            // 7. 落子
+            boardState[row][col] = color === 0 ? 1 : 2; // 1:黑子, 2:白子
+
+            // 9. 更新数据库
+            const updateSql = `
+            UPDATE current_game 
+            SET board_state = ?, current_turn = ?
+            WHERE id = 1
+        `;
+
+            let nextTurn = -1;
+
+            // 切换回合
+            nextTurn = color === 0 ? 1 : 0;
+
+            const result = await DB.query(updateSql, [
+                JSON.stringify(boardState),
+                nextTurn,
+            ]) as any;
+            
+            console.log(`${color === 0 ? '黑方' : '白方'}在(${row},${col})落子`);
+        } catch (error) {
+            console.error('落子失败:', error);
+        }
+    }
 }

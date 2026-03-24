@@ -13,4 +13,5 @@ export enum MessageType {
     SHOTDOWN = `shutdown`,
     ERROR = `error`,
     UPDATE = `update`,
+    STEP = `step`,
 }
